@@ -15,6 +15,12 @@ defmodule Hangman.Game do
     { game, tally(game) }
   end
 
+  @doc """
+  An iteresting technique here. Because you cannot do a pattern match
+  to find out if the guess has already occured, define another sub
+  function, in this case accept_move, and pattern match the true/false
+  decision on that.
+  """
   def make_move(game, guess) do
     game = accept_move(game, guess, MapSet.member?(game.used, guess))
     { game, tally(game) }
