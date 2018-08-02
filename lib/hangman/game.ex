@@ -7,8 +7,16 @@ defmodule Hangman.Game do
     used: MapSet.new(),
   )
 
+  @doc """
+  Interestinng technique; you can either provide a work or have the system
+  automatically generate on for you using the same function.
+  """
+  def new_game(word) do
+    %Hangman.Game{ letters: word |> String.codepoints }
+  end
+
   def new_game() do
-    %Hangman.Game{ letters: Dictionary.random_word() |> String.codepoints }
+    new_game(Dictionary.random_word())
   end
 
   def make_move(game = %{ game_state: state }, _guess) when state in [:won, :lost] do
@@ -16,10 +24,11 @@ defmodule Hangman.Game do
   end
 
   @doc """
-  An iteresting technique here. Because you cannot do a pattern match
-  to find out if the guess has already occured, define another sub
-  function, in this case accept_move, and pattern match the true/false
-  decision on that.
+  An iteresting technique here. Because you cannot do a boolena test
+  and pattern match
+  in the function call to find out if the guess has already occured,
+  call another function, in this case accept_move, that performs
+  a boolean test and pattern match on that function definition.
   """
   def make_move(game, guess) do
     game = accept_move(game, guess, MapSet.member?(game.used, guess))
@@ -32,10 +41,38 @@ defmodule Hangman.Game do
 
   def accept_move(game, guess, _already_guessed) do
     Map.put(game, :used, MapSet.put(game.used, guess))
+    |> score_guess(Enum.member?(game.letters, guess))
+  end
+
+  @doc """
+  Another good technique below. The MapSet.subset? function does a test.
+  Instead of some kind of conditional statement to process the result,
+  the result is fed into another function that uses patter matching to
+  perform the appropriate processing.
+  """
+  def score_guess(game, _good_guess = true) do
+    new_state = MapSet.new(game.letters)
+                |> MapSet.subset?(game.used)
+                |> maybe_won()
+    Map.put(game, :game_state, new_state)
+  end
+
+  def score_guess(game = %{ turns_left: 1 }, _not_good_guess) do
+    Map.put(game, :game_state, :lost)
+  end
+
+  def score_guess(game = %{ turns_left: turns_left }, _not_good_guess) do
+    %{ game |
+      game_state: :bad_guess,
+      turns_left: turns_left - 1
+    }
   end
 
   def tally(game) do
     123
   end
+
+  def maybe_won(true), do: :won
+  def maybe_won(_),    do: :good_guess
 
 end
