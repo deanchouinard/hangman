@@ -115,5 +115,11 @@ defmodule GameTest do
     game
   end
 
-    
+  test "make an illegal guess" do
+    game = Game.new_game()
+    game = Game.make_move(game, "gdsf")
+
+    assert game.turns_left == 7
+    assert game.game_state == :initializing
+  end
 end

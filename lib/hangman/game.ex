@@ -8,7 +8,7 @@ defmodule Hangman.Game do
   )
 
   @doc """
-  Interestinng technique; you can either provide a work or have the system
+  Interestinng technique; you can either provide a word or have the system
   automatically generate on for you using the same function.
   """
   def new_game(word) do
@@ -23,15 +23,8 @@ defmodule Hangman.Game do
      game
   end
 
-  @doc """
-  An iteresting technique here. Because you cannot do a boolena test
-  and pattern match
-  in the function call to find out if the guess has already occured,
-  call another function, in this case accept_move, that performs
-  a boolean test and pattern match on that function definition.
-  """
   def make_move(game, guess) do
-    accept_move(game, guess, MapSet.member?(game.used, guess))
+    valid_guess?(game, guess, Regex.match?(~r/^[a-z]{1}$/, guess))
   end
 
   def tally(game) do
@@ -43,6 +36,19 @@ defmodule Hangman.Game do
   end
 
   #########################
+
+  # An iteresting technique here. Because you cannot do a boolena test
+  # and pattern match
+  # in the function call to find out if the guess has already occured,
+  # call another function, in this case accept_move, that performs
+  # a boolean test and pattern match on that function definition.
+  defp valid_guess?(game, guess, _valid_guess = true) do
+    accept_move(game, guess, MapSet.member?(game.used, guess))
+  end
+
+  defp valid_guess?(game, guess, _invalid_guess) do
+    game
+  end
 
   defp accept_move(game, guess, _already_guessed = true) do
     Map.put(game, :game_state, :already_used)
@@ -57,7 +63,9 @@ defmodule Hangman.Game do
   # Instead of some kind of conditional statement to process the result,
   # the result is fed into another function that uses patter matching to
   # perform the appropriate processing.
-  
+  #
+  # Also, rather than just using a ture or false in the function signature,
+  # it is matched to a descriptive variable name.
   defp score_guess(game, _good_guess = true) do
     new_state = MapSet.new(game.letters)
                 |> MapSet.subset?(game.used)
